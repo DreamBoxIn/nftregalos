@@ -1,3 +1,11 @@
+/* globals.css */
+/* Styles for slick-carousel */
+@import "~slick-carousel/slick/slick.css";
+@import "~slick-carousel/slick/slick-theme.css";
+
+/* styles for date picker */
+@import 'react-datepicker/dist/react-datepicker.css';
+
 :root {
   --max-width: 1100px;
   --border-radius: 12px;
@@ -38,6 +46,12 @@
   --callout-border-rgb: 172, 175, 176;
   --card-rgb: 180, 185, 188;
   --card-border-rgb: 131, 134, 135;
+
+  --bg-gradient: linear-gradient(to right, #f8f9fa, #e0e0e0);
+  --modal-bg-color: rgba(255, 255, 255, 0.9);
+  --modal-bg-color-dark: rgba(26, 32, 44, 0.9);
+  --text-color-light: #000;
+  --text-color-dark: #fff;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -70,6 +84,12 @@
     --callout-border-rgb: 108, 108, 108;
     --card-rgb: 100, 100, 100;
     --card-border-rgb: 200, 200, 200;
+
+    --bg-gradient: linear-gradient(to right, #1e1e1e, #383838);
+    --modal-bg-color: rgba(26, 32, 44, 0.9);
+    --modal-bg-color-dark: rgba(255, 255, 255, 0.9);
+    --text-color-light: #fff;
+    --text-color-dark: #000;
   }
 }
 
@@ -87,12 +107,7 @@ body {
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  background: var(--bg-gradient);
 }
 
 a {
