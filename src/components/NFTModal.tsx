@@ -1,5 +1,5 @@
 //NFTModal.tsx//
-import React, { useMemo } from 'react';
+import React from 'react';
 import {
   Box, Text, Modal, ModalOverlay, ModalContent,
   ModalFooter, ModalBody, ModalCloseButton, useColorModeValue
@@ -17,15 +17,14 @@ interface NFTModalProps {
 }
 
 const NFTModal: React.FC<NFTModalProps> = ({ isOpen, onClose, isPastDate, selectedFullDate }) => {
-  const settings = useMemo(() => ({
+  const settings = {
     dots: true,
     infinite: true,
     speed: 500,
     slidesToShow: 1,
     slidesToScroll: 1,
-  }), []);
+  };
 
-  const memoizedNFTs = useMemo(() => nfts, []);
   const modalBg = useColorModeValue("var(--modal-bg-color)", "var(--modal-bg-color-dark)");
 
   return (
@@ -40,7 +39,7 @@ const NFTModal: React.FC<NFTModalProps> = ({ isOpen, onClose, isPastDate, select
             <>
               <Text fontSize="lg" fontWeight="bold">{selectedFullDate}</Text>
               <Slider {...settings}>
-                {memoizedNFTs.map(product => (
+                {nfts.map(product => (
                   <NFTCard key={product.id} nft={product} showGiftOption={true} />
                 ))}
               </Slider>

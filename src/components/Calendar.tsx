@@ -1,72 +1,77 @@
 //Calendar.tsx componente//
-import React, { useState, useEffect, memo, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import {
   Box, Button, Grid, GridItem, Text, useDisclosure, Tag, useBreakpointValue
 } from '@chakra-ui/react';
 import NFTModal from './NFTModal';
-import { daysInMonth, formatDate, isPast } from '@/utils/dateUtils';
 
-const dayNames = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+const daysInMonth = (month: number, year: number) => {
+  return new Date(year, month, 0).getDate();
+};
+
+const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 interface CalendarProps {
   month: number;
   year: number;
 }
 
+const formatDate = (date: Date) => {
+  const options: Intl.DateTimeFormatOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+  return date.toLocaleDateString('en-US', options);
+};
+
 const Calendar: React.FC<CalendarProps> = memo(({ month, year }) => {
   const today = new Date();
   const [currentMonth, setCurrentMonth] = useState(month);
   const [currentYear, setCurrentYear] = useState(year);
-  const [selectedDate, setSelectedDate] = useState<number | null>(today.getDate());
-  const [selectedFullDate, setSelectedFullDate] = useState<string>(formatDate(today));
+  const [selectedDate, setSelectedDate] = useState<number | null>(null);
+  const [selectedFullDate, setSelectedFullDate] = useState<string>('');
+  const days = daysInMonth(currentMonth, currentYear);
+  const firstDay = new Date(currentYear, currentMonth - 1, 1).getDay();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [isPastDate, setIsPastDate] = useState(false);
-  const [isClient, setIsClient] = useState(false);
 
   const tagSize = useBreakpointValue({ base: "xs", md: "sm" });
   const tagFontSize = useBreakpointValue({ base: "xx-small", md: "xs" });
   const tagPadding = useBreakpointValue({ base: "1px", md: "4px" });
 
   useEffect(() => {
-    setIsClient(typeof window !== 'undefined');
-  }, []);
-
-  useEffect(() => {
     setCurrentMonth(month);
     setCurrentYear(year);
-    setSelectedDate(today.getDate());
-    setSelectedFullDate(formatDate(today));
-  }, [month, year, today]);
+  }, [month, year]);
 
-  const days = useMemo(() => daysInMonth(currentMonth, currentYear), [currentMonth, currentYear]);
-  const firstDay = useMemo(() => new Date(currentYear, currentMonth - 1, 1).getDay(), [currentYear, currentMonth]);
+  const isPast = (day: number) => {
+    const date = new Date(currentYear, currentMonth - 1, day);
+    return date < today && date.toDateString() !== today.toDateString();
+  };
 
-  const products = useMemo(() => [
-    { id: 1, title: "NFT 1", description: "Descripción del NFT 1", image: "/nft1.png", available: 10, total: 20, type: "Arte", price: "100 USDT", artist: "Artista 1", benefits: ["Acceso VIP", "Descuento en eventos"] },
-    { id: 2, title: "NFT 2", description: "Descripción del NFT 2", image: "/nft2.png", available: 5, total: 10, type: "Música", price: "2 ETH", artist: "Artista 2", benefits: ["Acceso a contenido exclusivo", "Descuento en mercancía"] },
-    { id: 3, title: "NFT 3", description: "Descripción del NFT 3", image: "/nft3.png", available: 3, total: 5, type: "Coleccionable", price: "3 ETH", artist: "Artista 3", benefits: ["Acceso a meet & greet", "Descuento en futuras compras"] },
-  ], []);
-
-  const handleClick = useCallback((day: number) => {
+  const handleClick = (day: number) => {
     const selectedDate = new Date(currentYear, currentMonth - 1, day);
     setSelectedDate(day);
     setSelectedFullDate(formatDate(selectedDate));
-    setIsPastDate(isPast(selectedDate, today));
+    setIsPastDate(isPast(day));
     onOpen();
-  }, [currentMonth, currentYear, today, onOpen]);
+  };
 
-  const handleTagClick = useCallback((isPast: boolean) => {
+  const handleTagClick = (isPast: boolean) => {
     setIsPastDate(isPast);
     onOpen();
-  }, [onOpen]);
+  };
 
-  const handleDateChange = useCallback((date: string) => {
+  const handleDateChange = (date: string) => {
     const selectedDate = new Date(date);
     setSelectedFullDate(date);
     setSelectedDate(selectedDate.getDate());
     setCurrentMonth(selectedDate.getMonth() + 1);
     setCurrentYear(selectedDate.getFullYear());
-  }, []);
+  };
+
+  const products = [
+    { id: 1, title: "NFT 1", description: "Description of NFT 1", image: "/nft1.png", available: 10, total: 20, type: "Art", price: "100 USDT", artist: "Artist 1", benefits: ["VIP Access", "Event Discount"] },
+    { id: 2, title: "NFT 2", description: "Description of NFT 2", image: "/nft2.png", available: 5, total: 10, type: "Music", price: "2 ETH", artist: "Artist 2", benefits: ["Exclusive Content Access", "Merchandise Discount"] },
+    { id: 3, title: "NFT 3", description: "Description of NFT 3", image: "/nft3.png", available: 3, total: 5, type: "Collectible", price: "3 ETH", artist: "Artist 3", benefits: ["Meet & Greet Access", "Future Purchase Discount"] },
+  ];
 
   return (
     <Box>
@@ -83,13 +88,18 @@ const Calendar: React.FC<CalendarProps> = memo(({ month, year }) => {
           <GridItem key={i} w="100%" textAlign="center" position="relative">
             <Button
               onClick={() => handleClick(i + 1)}
-              colorScheme={selectedDate === i + 1 ? "teal" : isPast(new Date(currentYear, currentMonth - 1, i + 1), today) ? "red" : "gray"}
-              size={{ base: "sm", md: "md" }}
+              colorScheme={selectedDate === i + 1 ? "teal" : isPast(i + 1) ? "red" : "gray"}
+              size={{ base: "sm", md: "lg" }}
               w="100%"
+              h={{ base: "50px", md: "70px" }}
+              style={{
+                backgroundColor: isPast(i + 1) ? 'rgba(255, 0, 0, 0.4)' : '',
+                fontSize: '1.2rem',
+              }}
             >
               {i + 1}
             </Button>
-            {!isPast(new Date(currentYear, currentMonth - 1, i + 1), today) && (
+            {!isPast(i + 1) && (
               <Tag
                 size={tagSize}
                 colorScheme="blue"
@@ -101,10 +111,10 @@ const Calendar: React.FC<CalendarProps> = memo(({ month, year }) => {
                 opacity={0.7}
                 onClick={() => handleTagClick(false)}
               >
-                {products[i % products.length].available} de {products[i % products.length].total}
+                {products[i % products.length].available} left
               </Tag>
             )}
-            {isPast(new Date(currentYear, currentMonth - 1, i + 1), today) && (
+            {isPast(i + 1) && (
               <Tag
                 size={tagSize}
                 colorScheme="red"
@@ -116,14 +126,14 @@ const Calendar: React.FC<CalendarProps> = memo(({ month, year }) => {
                 opacity={0.7}
                 onClick={() => handleTagClick(true)}
               >
-                Vencido
+                Expired
               </Tag>
             )}
           </GridItem>
         ))}
       </Grid>
 
-      {isClient && (
+      {isOpen && (
         <NFTModal
           isOpen={isOpen}
           onClose={onClose}
